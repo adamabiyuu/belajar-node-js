@@ -18,8 +18,19 @@
 //     if(e) throw e;
 //     console.log(data)
 // })
+const { dir } = require('console');
 const fs = require('fs');
 const readline = require('readline');
+
+const dirPath = './data';
+if( !fs.existsSync(dirPath) ){
+    fs.mkdirSync(dirPath);
+}
+
+const dataPath = './data/contacts.json';
+if( !fs.existsSync(dataPath) ){
+    fs.writeFileSync(dataPath, '[]', 'utf-8');
+}
 
 const rl = readline.createInterface({
     input: process.stdin,
