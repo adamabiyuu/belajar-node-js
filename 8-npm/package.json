@@ -4,13 +4,17 @@
   "description": "Belajar node js",
   "main": "app.js",
   "scripts": {
-    "start": "node app",
+    "start": "nodemon app",
     "dev": "ls",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "adam abiyu",
   "license": "ISC",
   "dependencies": {
+    "chalk": "^4.1.0",
     "validator": "^13.5.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
   }
 }
