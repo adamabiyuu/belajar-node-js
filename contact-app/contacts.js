@@ -1,13 +1,16 @@
 const { rejects } = require("assert");
 const { dir } = require("console");
 const fs = require("fs");
-const { resolve } = require("path");
-const readline = require("readline");
+const chalk = require("chalk");
+const validator = require('validator')
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
+const { resolve } = require("path");
+// const readline = require("readline");
+
+// const rl = readline.createInterface({
+//   input: process.stdin,
+//   output: process.stdout,
+// });
 
 // membuat file data jika belum ada
 const dirPath = "./data";
@@ -21,28 +24,102 @@ if (!fs.existsSync(dataPath)) {
   fs.writeFileSync(dataPath, "[]", "utf-8");
 }
 
-const tulisPertanyaan = (pertanyaan) => {
-  return new Promise((resolve, reject) => {
-    rl.question(pertanyaan, (nama) => {
-      resolve(nama);
-    });
-  });
-};
+// const tulisPertanyaan = (pertanyaan) => {
+//   return new Promise((resolve, reject) => {
+//     rl.question(pertanyaan, (nama) => {
+//       resolve(nama);
+//     });
+//   });
+// };
 
+const loadContact = () => {
+  const fileBuffer = fs.readFileSync("data/contacts.json", "utf-8");
+  const contacts = JSON.parse(fileBuffer);
+  return contacts;
+}
 
 const simpanContact = (nama, email, noHP) => {
     const contact = { nama, email, noHP };
-    const fileBuffer = fs.readFileSync("data/contacts.json", "utf-8");
-    const contacts = JSON.parse(fileBuffer);
+    // const fileBuffer = fs.readFileSync("data/contacts.json", "utf-8");
+    // const contacts = JSON.parse(fileBuffer);
+    const contacts = loadContact();
+
+    // cek duplikat
+    const duplikat = contacts.find(contact => contact.nama == nama);
+    if( duplikat ){
+      console.log(
+        chalk.red.inverse.bold('Contact sudah terdaftar, gunakan nama lain!')
+      );
+      return false;
+    }
+
+    // cek email
+    if(email){
+      if( !validator.isEmail(email) ) {
+        console.log(chalk.red.inverse.bold("Email tidak valid ges"));
+        return false;
+      }
+    }
+
+    if( !validator.isMobilePhone(noHP, 'id-ID')){
+      console.log(chalk.red.inverse.bold("No HP tidak valid ges"));
+      return false;
+    }
+
 
     contacts.push(contact);
 
     fs.writeFileSync("data/contacts.json", JSON.stringify(contacts));
-    console.log("makasi dah diisi hehe");
-    rl.close();
+    console.log(chalk.green.inverse.bold("makasi dah diisi hehe"));
+  }
+  
+  const listContact = () => {
+    const contacts = loadContact();
+    console.log(chalk.cyan.inverse.bold("Daftar Kontak : "));
+
+
+  contacts.forEach((contact, i) => {
+    console.log(`${i + 1}. ${contact.nama} - ${contact.noHP}`)   
+  });
 }
 
-module.exports = {
-    tulisPertanyaan,
-    simpanContact
+const detailContact = (nama)=> {
+  const contacts = loadContact();
+
+  const contact = contacts.find((contact) => contact.nama.toLowerCase() === nama.toLowerCase());
+  if(!contact) {
+    console.log(chalk.red.inverse.bold(`${nama} tidak ditemukan`));
+    return false;
+  }
+  
+  console.log(chalk.cyan.inverse.bold(contact.nama));
+  console.log(contact.noHP);
+  if(contact.email){
+    console.log(contact.email);
+  }
+  
 }
+
+const deleteContact = (nama) => {
+  const contacts = loadContact();
+  
+  const newContacts = contacts.filter((contact) => contact.nama.toLowerCase() !== nama.toLowerCase());
+  
+  if( contacts.length === newContacts.length ){
+    console.log(chalk.red.inverse.bold(`${nama} tidak ditemukan`));
+    return false;
+  }
+
+  fs.writeFileSync("data/contacts.json", JSON.stringify(newContacts));
+  console.log(chalk.green.inverse.bold(`data kontak ${nama} berhasil dihapus`));
+}
+
+
+
+module.exports = {
+  simpanContact,
+  listContact,
+  detailContact,
+  deleteContact
+}
+// tulisPertanyaan,
