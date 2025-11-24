@@ -1,12 +1,19 @@
 const express = require("express");
 const expressLayouts = require('express-ejs-layouts');
+const morgan = require('morgan');
 const app = express();
 const port = 3000;
 
 // gunakan ejs
 app.set('view engine', 'ejs');
-app.use(expressLayouts);
 
+// Third-party Middleware
+app.use(expressLayouts);
+app.use(morgan('dev'));
+
+
+// Built-in middleware buat gambar diizinin terlihat di kasus ini
+app.use(express.static('public'))
 
 app.use((req, res, next) => {
   console.log('Time: ', Date.now());
