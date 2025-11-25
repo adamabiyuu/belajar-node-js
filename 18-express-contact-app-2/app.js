@@ -1,6 +1,10 @@
 const express = require("express");
 const expressLayouts = require('express-ejs-layouts');
-const { loadContact, findContact, addContact } = require('./utils/contacts')
+const { loadContact, findContact, addContact, cekDuplikat } = require('./utils/contacts')
+const { body, check, query, validationResult } = require("express-validator");
+const session = require('express-session')
+const cookieParser = require('cookie-parser')
+const flash = require('connect-flash')
 
 const app = express(); 
 const port = 3000;
@@ -12,8 +16,18 @@ app.use(expressLayouts);
 // Built-in middleware buat gambar diizinin terlihat di kasus ini
 app.use(express.static('public'))
 // Built-in middleware buat data yang dikirim harus diparsing dulu
-app.use(express.urlencoded())
+app.use(express.urlencoded( { extended: true }))
 
+
+// konfigurasi flash
+app.use(cookieParser('secret'))
+app.use(session({
+  cookie: { maxAge: 6000 },
+  secret: 'secret',
+  resave: true,
+  saveUninitialized: true,
+}));
+app.use(flash());
 
 app.get("/", (req, res) => {
   const mahasiswa = [
@@ -48,7 +62,8 @@ app.get("/contact", (req, res) => {
   res.render("contact", {
     layout: "layouts/main-layout",
     title: "Halaman Contact",
-    contacts
+    contacts,
+    msg: req.flash('msg')
   });
 });
 
@@ -61,10 +76,33 @@ app.get('/contact/add', (req, res) => {
 })
 
 // Proses Data Kontak
-app.post('/contact', (req, res) => {
-  addContact(req.body);
-  // ini bakal ke contact yang method nya get
-  res.redirect('/contact')
+app.post('/contact', [
+  body('nama').custom((value) => {
+    const duplikat = cekDuplikat(value);
+    if(duplikat){
+      throw new Error('Nama contact has already used')
+    }
+    return true;
+  }),
+  check('email', 'Email tidak valid').isEmail(),
+  check('nohp', 'No Hp tidak valid').isMobilePhone('id-ID')
+], (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()){
+    // return res.status(400).json({errors: errors.array()});
+    res.render('add-contact', {
+      title: 'Form tambah data contact',
+      layout: 'layouts/main-layout',
+      errors: errors.array(),
+    })
+  } else {
+
+    addContact(req.body);
+    // kirimkan flash message
+    req.flash('msg', 'Data Contact berhasil ditambahkan!')
+    // ini bakal ke contact yang method nya get
+    res.redirect('/contact')
+  }
 })
 
 // halaman detail kontak
