@@ -1,6 +1,6 @@
 const express = require("express");
 const expressLayouts = require('express-ejs-layouts');
-const { loadContact, findContact, addContact, cekDuplikat, deleteContact } = require('./utils/contacts')
+const { loadContact, findContact, addContact, cekDuplikat, deleteContact, updateContacts } = require('./utils/contacts')
 const { body, check, query, validationResult } = require("express-validator");
 const session = require('express-session')
 const cookieParser = require('cookie-parser')
@@ -158,12 +158,11 @@ app.post(
         contact: req.body,
       });
     } else {
-      res.send(req.body)
-      // addContact(req.body);
-      // // kirimkan flash message
-      // req.flash("msg", "Data Contact berhasil ditambahkan!");
-      // // ini bakal ke contact yang method nya get
-      // res.redirect("/contact");
+      updateContacts(req.body);
+      // kirimkan flash message
+      req.flash("msg", "Data Contact berhasil diubah!");
+      // ini bakal ke contact yang method nya get
+      res.redirect("/contact");
     }
   }
 );
