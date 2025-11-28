@@ -11,7 +11,7 @@ const Contact = require('./model/contact')
 const app = express();
 const port = 3000;
 
-// gunakan ejs
+// setup ejs
 app.set('view engine', 'ejs');
 // Third-party Middleware
 app.use(expressLayouts);
