@@ -65,9 +65,6 @@ app.get("/about", (req, res) => {
 
 // Halaman contact
 app.get("/contact", async (req, res) => {
-  // Contact.find().then((result) => {
-  //   res.send(contact)
-  // })
   
   const contacts = await Contact.find();
 
